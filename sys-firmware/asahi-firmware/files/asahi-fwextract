@@ -1,0 +1,24 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+
+set -e
+
+if [ $(whoami) -ne "root" ]; then
+    echo "This script must be run as root"
+    exit 1
+fi
+
+PREFIX="/boot/efi"
+
+if [ ! -f ${PREFIX}/asahi/all_firmware.tar.gz ]; then
+    printf '==> No /boot/efi/asahi/all_firmware.tar.gz, trying /boot'
+    PREFIX="/boot"
+    if [ ! -f ${PREFIX}/asahi/all_firmware.gz ]; then
+        printf '==> No /boot/asahi/all_firmware.tar.gz. Skipping firmware upgrade.'
+        return 0
+    fi
+fi
+
+printf '==> Upgrading vendor firmware package...\n'
+python -m asahi_firmware.update ${PREFIX}/asahi ${PREFIX}/vendorfw
+printf '    Firmware upgraded\n'
